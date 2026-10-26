@@ -13,29 +13,24 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough, RunnableLambda
 from langchain_core.output_parsers import StrOutputParser
 
-# --- LangSmith env (make sure these are set) ---
-# LANGCHAIN_TRACING_V2=true
-# LANGCHAIN_API_KEY=...
-# LANGCHAIN_PROJECT=pdf_rag_demo
-
 load_dotenv()
 
 PDF_PATH = "islr.pdf"  # change to your file
 
 # ---------- traced setup steps ----------
-@traceable(name="load_pdf")
+@traceable(name="load_pdf", tags=["data-loader", "document-loading"])
 def load_pdf(path: str):
     loader = PyPDFLoader(path)
     return loader.load()  # list[Document]
 
-@traceable(name="split_documents")
+@traceable(name="split_documents", tags=["text-splitter"])
 def split_documents(docs, chunk_size=1000, chunk_overlap=150):
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size, chunk_overlap=chunk_overlap
     )
     return splitter.split_documents(docs)
 
-@traceable(name="build_vectorstore")
+@traceable(name="build_vectorstore", tags=["retriever", "embedding", "vectorstore"])
 def build_vectorstore(splits):
     emb = OpenAIEmbeddings(model="text-embedding-3-small")
     # FAISS.from_documents internally calls the embedding model:
